@@ -1,0 +1,4 @@
+.env
+vanity-worker
+*.exe
+*.log
