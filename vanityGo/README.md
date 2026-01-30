@@ -68,18 +68,7 @@ CREATE TABLE vanity_keypairs (
     used_by_user_id VARCHAR(255),
     token_pool_address VARCHAR(255),
     transaction_signature VARCHAR(255),
-    vanity_pattern VARCHAR(50),
-    generation_attempts INTEGER
-);
-
-CREATE INDEX idx_vanity_keypairs_status ON vanity_keypairs(status);
-CREATE INDEX idx_vanity_keypairs_public_key ON vanity_keypairs(public_key);
-```
-
-### 4. Build and Run
-
-```bash
-# Build
+    # Build
 go build -o vanity-worker
 
 # Run
@@ -87,7 +76,6 @@ go build -o vanity-worker
 
 # Or run directly
 go run .
-```
 
 ## ⚙️ Configuration
 

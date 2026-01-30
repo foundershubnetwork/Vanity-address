@@ -13,7 +13,7 @@ type VanityResult struct {
 	Attempts  int
 }
 
-func GenerateVanityKeypair(pattern string, resultChan chan<- VanityResult, workerID int) {
+func GenerateVanityKeypair(prefix, suffix string, resultChan chan<- VanityResult, workerID int) {
 	attempts := 0
 
 	for {
@@ -22,7 +22,9 @@ func GenerateVanityKeypair(pattern string, resultChan chan<- VanityResult, worke
 		account := solana.NewWallet()
 		publicKey := account.PublicKey().String()
 
-		if strings.HasSuffix(publicKey, strings.ToLower(pattern)) {
+		// Case-sensitive matching for now, as is standard for vanity addresses
+		// User can handle casing in the input string if needed
+		if strings.HasPrefix(publicKey, prefix) && strings.HasSuffix(publicKey, suffix) {
 			resultChan <- VanityResult{
 				Keypair:   account.PrivateKey,
 				PublicKey: publicKey,
@@ -31,7 +33,7 @@ func GenerateVanityKeypair(pattern string, resultChan chan<- VanityResult, worke
 			return
 		}
 
-		if attempts%10000 == 0 {
+		if attempts%100000 == 0 {
 			fmt.Printf("[Worker %d] Tried %d addresses...\n", workerID, attempts)
 		}
 	}

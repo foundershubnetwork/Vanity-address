@@ -23,9 +23,14 @@ func main() {
 		log.Fatal("DATABASE_URL is required")
 	}
 
-	vanityPattern := os.Getenv("VANITY_PATTERN")
-	if vanityPattern == "" {
-		vanityPattern = "on1y"
+	vanityPrefix := os.Getenv("VANITY_PREFIX")
+	vanitySuffix := os.Getenv("VANITY_SUFFIX")
+	// Legacy fallback
+	if vanityPrefix == "" && vanitySuffix == "" {
+		vanitySuffix = os.Getenv("VANITY_PATTERN")
+		if vanitySuffix == "" {
+			vanitySuffix = "on1y"
+		}
 	}
 
 	targetCount, _ := strconv.Atoi(os.Getenv("TARGET_KEYPAIR_COUNT"))
@@ -39,7 +44,7 @@ func main() {
 	}
 
 	fmt.Println("Vanity Generator Worker Started (Go)")
-	fmt.Printf("Target: %d keypairs ending with \"%s\"\n", targetCount, vanityPattern)
+	fmt.Printf("Target: %d keypairs with prefix \"%s\" and suffix \"%s\"\n", targetCount, vanityPrefix, vanitySuffix)
 	fmt.Printf("Workers: %d concurrent goroutines\n", numWorkers)
 	fmt.Println(strings.Repeat("━", 60))
 
@@ -83,7 +88,7 @@ func main() {
 		go func(workerID int) {
 			defer wg.Done()
 			for range workerQueue {
-				GenerateVanityKeypair(vanityPattern, resultChan, workerID)
+				GenerateVanityKeypair(vanityPrefix, vanitySuffix, resultChan, workerID)
 			}
 		}(i)
 	}
@@ -111,7 +116,8 @@ func main() {
 		secretKeyBase58 := result.Keypair.String()
 		secretKeyBytes := []byte(result.Keypair)
 
-		err = db.CreateKeypair(result.PublicKey, secretKeyBase58, secretKeyBytes, vanityPattern, result.Attempts)
+		patternString := vanityPrefix + "..." + vanitySuffix
+		err = db.CreateKeypair(result.PublicKey, secretKeyBase58, secretKeyBytes, patternString, result.Attempts)
 		if err != nil {
 			log.Printf("Error saving to database: %v", err)
 			continue

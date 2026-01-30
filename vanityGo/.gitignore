@@ -2,3 +2,4 @@
 vanity-worker
 *.exe
 *.log
+.env.example
